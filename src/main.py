@@ -8,25 +8,26 @@ from config.component import ConfigComponent
 
 
 parser = argparse.ArgumentParser(
-           prog='vitalik-lamar',
-           description='Telegram bot for VITALIK RC group',
-           epilog='Be humble')
+    prog="vitalik-lamar",
+    description="Telegram bot for VITALIK RC group",
+    epilog="Be humble",
+)
 
-parser.add_argument('-c', '--config-path')
+parser.add_argument("-c", "--config-path")
 
 
 async def main():
-  args = parser.parse_args()
+    args = parser.parse_args()
 
-  config_component = ConfigComponent(args.config_path)
-  model = Model(config_component)
-  messages_storage = Messages(config_component)
-  bot = Bot(config_component, model, messages_storage)
+    config_component = ConfigComponent(args.config_path)
+    model = Model(config_component)
+    messages_storage = Messages(config_component)
+    bot = Bot(config_component, model, messages_storage)
 
-  model_task = asyncio.create_task(model.start(), name='language-model')
-  bot_task = asyncio.create_task(bot.start(), name='telegram-bot')
-  await asyncio.gather(*[model_task, bot_task])
+    model_task = asyncio.create_task(model.start(), name="language-model")
+    bot_task = asyncio.create_task(bot.start(), name="telegram-bot")
+    await asyncio.gather(*[model_task, bot_task])
 
 
-if __name__ == '__main__':
-  asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
