@@ -1,5 +1,6 @@
-import yaml
 import asyncio
+
+import yaml
 
 
 class ConfigComponent:
@@ -15,7 +16,7 @@ class ConfigComponent:
         )
 
     def read_config(self):
-        with open(self.config_path) as config_yaml:
+        with open(self.config_path, mode='r', encoding='utf-8') as config_yaml:
             return yaml.safe_load(config_yaml)
 
     async def update_config(self, period_sec=5):

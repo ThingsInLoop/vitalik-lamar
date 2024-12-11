@@ -1,7 +1,8 @@
 import asyncio
-import requests
 import json
 import copy
+
+import requests
 
 
 class Token:

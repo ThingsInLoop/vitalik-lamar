@@ -1,5 +1,3 @@
-import asyncio
-
 from telebot.async_telebot import AsyncTeleBot
 from telebot.util import quick_markup
 
@@ -14,7 +12,7 @@ class Bot:
         self.messages = messages_storage
 
         @self.bot.callback_query_handler(
-            func=lambda callback: callback.data == "фишинг" or callback.data == "прочее"
+            func=lambda callback: callback.data in ('фишинг', 'прочее')
         )
         async def callbacks(callback):
             await self.remove_markup(callback.message)
@@ -56,25 +54,21 @@ class Bot:
 
     async def send_apologizes(self, for_message):
         apologizes = await self.lang_model.get_answer(
-            """
-        Ты перепутал, и обвинил друга {} в отправке спама. Кратко и с отмазкой извинись.
-        Используй имя в его краткой форме на русском языке.
-      """.format(
-                for_message.from_user.first_name
-            )
-        )
+            f"""
+               Ты перепутал, и обвинил друга {for_message.from_user.first_name} в отправке спама.
+               Кратко и с отмазкой извинись.
+               Используй имя в его краткой форме на русском языке.
+             """)
 
         await self.bot.reply_to(for_message, apologizes)
 
     async def send_gratitude(self, for_callback):
         gratitude = await self.lang_model.get_answer(
-            """
-        Ты угадывал какое сообщение спам, а какое не спам. Друг {} помог тебе определить спам.
-        Кратко и мило поблагодари друга и, если захочешь, остальных ребят из чата.
-        Используй имя в его краткой форме и на русском языке.
-      """.format(
-                for_callback.from_user.first_name
-            )
-        )
+            f"""
+              Ты угадывал какое сообщение спам, а какое не спам.
+              Друг {for_callback.from_user.first_name} помог тебе определить спам.
+              Кратко и мило поблагодари друга и, если захочешь, остальных ребят из чата.
+              Используй имя в его краткой форме и на русском языке.
+            """)
 
         await self.bot.reply_to(for_callback.message, gratitude)

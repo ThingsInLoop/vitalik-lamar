@@ -1,6 +1,3 @@
-import asyncio
-import json
-
 from yandex_cloud_ml_sdk import YCloudML
 
 from language_model.iam_token import Token
