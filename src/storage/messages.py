@@ -3,17 +3,16 @@ import sqlite3
 
 class Messages:
     create_messages_table = """
-    CREATE TABLE IF NOT EXISTS messages(type, message)
+    CREATE TABLE IF NOT EXISTS messages(id, chat_id, message)
   """
 
     insert_message = """
     INSERT INTO messages VALUES 
-      ('{}', '{}')
+      ('{}', '{}', '{}')
   """
 
-    select_messages_by_type = """
-    SELECT message FROM messages
-    WHERE type == '{}'
+    select_messages = """
+    SELECT * FROM messages
   """
 
     def __init__(self, config_component):
@@ -24,15 +23,15 @@ class Messages:
         cursor = self.connection.cursor()
         cursor.execute(self.create_messages_table)
 
-    def write_message(self, message_type, message_text):
+    def write_message(self, message_id, chat_id, message_text):
         cursor = self.connection.cursor()
-        cursor.execute(self.insert_message.format(message_type, message_text))
+        cursor.execute(self.insert_message.format(message_id, chat_id, message_text))
         self.connection.commit()
 
-    def read_messages(self, message_type):
+    def read_messages(self):
         cursor = self.connection.cursor()
-        result = cursor.execute(self.select_messages_by_type.format(message_type))
-        return [i[0] for i in result.fetchall()]
+        result = cursor.execute(self.select_messages)
+        return [i for i in result.fetchall()]
 
 
 class ConfigMock:
@@ -43,22 +42,6 @@ class ConfigMock:
 if __name__ == "__main__":
     config_mock = ConfigMock()
     db = Messages(config_mock)
-    fishing = db.read_messages("фишинг")
-    other = db.read_messages("прочее")
 
-    print("other: ", len(other), "; fishing: ", len(fishing), "\n")
+    print(db.read_messages())
 
-    written = {}
-    for message in fishing:
-        if message in written:
-            continue
-        print({"text": message, "label": "фишинг"})
-        written[message] = True
-
-    print("\n")
-
-    for message in other:
-        if message in written:
-            continue
-        print({"text": message, "label": "прочее"})
-        written[message] = True

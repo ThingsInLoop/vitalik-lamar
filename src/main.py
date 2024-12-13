@@ -4,6 +4,7 @@ import argparse
 from telegram.bot import Bot
 from language_model.yandexgpt import Model
 from storage.messages import Messages
+from storage.users import Users
 from config.component import ConfigComponent
 
 
@@ -22,7 +23,8 @@ async def main():
     config_component = ConfigComponent(args.config_path)
     model = Model(config_component)
     messages_storage = Messages(config_component)
-    bot = Bot(config_component, model, messages_storage)
+    users_storage = Users(config_component)
+    bot = Bot(config_component, model, messages_storage, users_storage)
 
     model_task = asyncio.create_task(model.start(), name="language-model")
     bot_task = asyncio.create_task(bot.start(), name="telegram-bot")

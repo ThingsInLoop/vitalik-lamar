@@ -34,7 +34,7 @@ class Model:
 
         return False
 
-    async def get_answer(self, message: str):
+    async def prompt(self, message: str):
         iam_token = await self.token.get()
         sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
