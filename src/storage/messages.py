@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 
 class Messages:
@@ -36,7 +37,7 @@ class Messages:
 
 class ConfigMock:
     def get_config(self):
-        return {"storage": {"db-path": "/home/oltermanni/vitalik-lamar-messages.db"}}
+        return {"storage": {"db-path": sys.argv[1]}}
 
 
 if __name__ == "__main__":

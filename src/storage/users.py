@@ -1,15 +1,21 @@
 import sqlite3
 import json
+import sys
 
 
 class Users:
     create_users_table = """
-    CREATE TABLE IF NOT EXISTS users(id, username, verification, banned_for_message)
+    CREATE TABLE IF NOT EXISTS users(id, first_name, username, verification, banned_for_message)
   """
 
     insert_new_user = """
     INSERT INTO users VALUES 
-      ('{}', '{}', '{}', NULL)
+      ('{}', '{}', '{}', '{}', NULL)
+  """
+
+    select_user_by_id = """
+    SELECT * from users
+    WHERE id == '{}'
   """
 
     update_verification_query = """
@@ -41,20 +47,29 @@ class Users:
         cursor = self.connection.cursor()
         cursor.execute(self.create_users_table)
 
-    def add_user(self, user_id, username, verification):
-        print('add_user')
+    def add_user(self, user_id, first_name, username, verification):
+        if username is None:
+            username = first_name
+
         cursor = self.connection.cursor()
-        cursor.execute(self.insert_new_user.format(user_id, username, verification))
+        cursor.execute(self.insert_new_user.format(
+            user_id,
+            first_name,
+            username,
+            verification))
         self.connection.commit()
 
+    def get_user(self, user_id):
+        cursor = self.connection.cursor()
+        result = cursor.execute(self.select_user_by_id.format(user_id))
+        return result.fetchone()
+
     def update_verification(self, user_id, new_verification):
-        print('update_verification')
         cursor = self.connection.cursor()
         cursor.execute(self.update_verification_query.format(new_verification, user_id))
         self.connection.commit()
 
     def update_ban_message(self, user_id, message_id, chat_id):
-        print('update_ban_message')
         ban_for_message = {'message_id': message_id, 'chat_id': chat_id}
 
         cursor = self.connection.cursor()
@@ -62,13 +77,11 @@ class Users:
         self.connection.commit()
 
     def read_users(self):
-        print('read_users')
         cursor = self.connection.cursor()
         result = cursor.execute(self.select_all_users)
         return [i for i in result.fetchall()]
 
     def read_users_by_verification(self, verification):
-        print('read_users_by_verification')
         cursor = self.connection.cursor()
         result = cursor.execute(self.select_users_by_verification.format(verification))
         return [i for i in result.fetchall()]
@@ -76,7 +89,7 @@ class Users:
 
 class ConfigMock:
     def get_config(self):
-        return {"storage": {"db-path": "/home/oltermanni/vitalik-lamar-messages.db"}}
+        return {"storage": {"db-path": sys.argv[1]}}
 
 
 if __name__ == "__main__":
