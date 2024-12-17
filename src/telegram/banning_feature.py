@@ -50,7 +50,7 @@ class Users:
         user = self._users_storage.get_user(user_id)
         if user is None:
             return None
-        return user[2]
+        return ('@' + user[2]) if user[2] is not None else user[1]
 
     def is_verified(self, user):
         return user.id in self.verified_users
@@ -146,9 +146,21 @@ class BanningFeature:
     async def process_callback(self, callback):
         callback_data = ast.literal_eval(callback.data)
         if callback_data['type'] == 'banning-pardon':
+            username = self.users.get_username(int(callback_data['user_id']))
+
+            admins = await self.bot.get_chat_administrators(callback.message.chat.id)
+            if not any(member.user.id == callback.from_user.id for member in admins):
+                ask_for_admins = await self.lang_model.prompt(
+                    f'Друг {callback.from_user.first_name} пытался разбанить ' \
+                    f'пользователя {username}, но {callback.from_user.first_name} ' \
+                    f'не является администратором чата. Попроси друга обратиться к ' \
+                    f'администраторам, чтобы они разбанили за него. Обращайся по имени ' \
+                    f'в краткой форме на русском языке.')
+                await self.bot.reply_to(callback.message, ask_for_admins)
+                return
+
             await self._remove_markup(callback.message)
 
-            username = self.users.get_username(int(callback_data['user_id']))
             if callback.message.reply_to_message is not None:
                 username = callback.message.reply_to_message.from_user.first_name
             await self._pardon(callback_data['user_id'], username, callback.message.chat)
@@ -163,8 +175,11 @@ class BanningFeature:
 
         await self.bot.delete_message(for_message.chat.id, for_message.message_id)
         markup = _pardon_markup('Ты что ты что, а ну разбань', for_message)
+        username = (('@' + for_message.from_user.username) 
+                         if for_message.from_user.username is not None 
+                         else for_message.from_user.first_name)
         notification = await self.lang_model.prompt(
-            f'Ты забанил @{for_message.from_user.username} за спам. Кратко опиши ' \
+            f'Ты забанил {username} за спам. Кратко опиши ' \
             f'случившееся. Расскажи об этом так, будто ты строгий полицейский ' \
             f'и арестовал преступника.')
 
@@ -182,9 +197,11 @@ class BanningFeature:
 
     async def _ask_for_ban_with_callback(self, for_message):
         markup = _pardon_markup('Ты что ты что, это не спам', for_message)
-        username = for_message.from_user.username
+        username = (('@' + for_message.from_user.username) 
+                         if for_message.from_user.username is not None 
+                         else for_message.from_user.first_name)
         bot_message = await self.lang_model.prompt(f'Ты пытался забанить ' \
-            f'@{username} за спам в чате, но по какой-то причине не ' \
+            f'{username} за спам в чате, но по какой-то причине не ' \
             f'получилось. Возможно у тебя нет прав администратора. Кратко ' \
             f'попроси ребят из чата ' \
             f'забанить этого @{username}. Кратко извинись перед всеми за то,' \
@@ -201,7 +218,7 @@ class BanningFeature:
 
         member = await self.bot.get_chat_member(chat.id, user_id)
         if member.status == 'kicked':
-            prompt = f'Ты случайно выгнал из чата друга по имени @{username}. ' \
+            prompt = f'Ты случайно выгнал из чата друга по имени {username}. ' \
                      f'Попроси ребят из чата добавить его обратно, извинись и ' \
                      f'пообещай, что больше не будешь его банить.'
         

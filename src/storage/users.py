@@ -13,6 +13,11 @@ class Users:
       ('{}', '{}', '{}', '{}', NULL)
   """
 
+    insert_new_user_wout_username = """
+    INSERT INTO users VALUES 
+      ('{}', '{}', NULL, '{}', NULL)
+  """
+
     select_user_by_id = """
     SELECT * from users
     WHERE id == '{}'
@@ -48,15 +53,18 @@ class Users:
         cursor.execute(self.create_users_table)
 
     def add_user(self, user_id, first_name, username, verification):
-        if username is None:
-            username = first_name
-
         cursor = self.connection.cursor()
-        cursor.execute(self.insert_new_user.format(
-            user_id,
-            first_name,
-            username,
-            verification))
+        if username is not None:
+            cursor.execute(self.insert_new_user.format(
+                user_id,
+                first_name,
+                username,
+                verification))
+        else:
+            cursor.execute(self.insert_new_user_wout_username.format(
+                user_id,
+                first_name,
+                verification))
         self.connection.commit()
 
     def get_user(self, user_id):
