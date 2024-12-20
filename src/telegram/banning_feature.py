@@ -19,9 +19,19 @@ def _pardon_markup(text, message):
         row_width=1,
     )
 
+
 def _escape_markdown(text) -> str:
     escape_chars = r'_*[]()~`>#+-=|{}.!'
     return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+
+
+def _too_many_custom_emojis(message):
+    if message.entities is None:
+        return False
+
+    custom_emojis = sum(1 for entity in message.entities if entity.type == 'custom_emoji')
+    if custom_emojis > 20:
+        return True
 
 
 class UserVerification(Enum):
@@ -110,7 +120,8 @@ class BanningFeature:
 
     async def process_message(self, message):
         if not (self.users.is_banned(message.from_user) or 
-            await self.lang_model.is_fishing(message.text)
+                _too_many_custom_emojis(message) or
+                await self.lang_model.is_fishing(message.text)
         ):
             self.users.verify(message.from_user)
             if self.users.is_verified(message.from_user):

@@ -5,6 +5,8 @@ from language_model.iam_token import iam_token_polling
 from language_model.fishing_samples import fishing_samples
 
 
+labels=["фишинг", "прочее"]
+
 class Model:
     def __init__(self, config_component):
         self.config_component = config_component
@@ -22,14 +24,14 @@ class Model:
 
         model = sdk.models.text_classifiers("yandexgpt").configure(
             task_description="Определи категорию сообщения, отправленного в чат бегового клуба",
-            labels=["фишинг", "прочее"],
+            labels=labels,
             samples=fishing_samples,
         )
 
         result = model.run(message)
 
         for prediction in result:
-            if prediction.confidence >= 0.92 and prediction.label == "фишинг":
+            if prediction.confidence >= 0.92 and prediction.label == labels[0]:
                 return True
 
         return False
