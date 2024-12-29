@@ -24,39 +24,3 @@ class Components:
         for component in self.components:
             self.components[component]()
         
-
-class A:
-    @staticmethod
-    def get_name():
-        return 'component-A'
-
-    @staticmethod
-    def create(components):
-        print('start A')
-        return A()
-
-    def print_name(self):
-        print(self.get_name())
-
-
-class B:
-    @staticmethod
-    def get_name():
-        return 'component-B'
-
-    @staticmethod
-    def create(components):
-        print('start B')
-        self = B()
-        self.a = components.find('component-A')
-        return self
-
-    def action(self):
-        self.a.print_name()
-
-
-if __name__ == '__main__':
-    components = Components()
-    components.append(B).append(A).start()
-
-    components.find('component-B').action()
