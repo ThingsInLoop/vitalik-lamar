@@ -7,6 +7,8 @@ from storage.messages import Messages
 from storage.users import Users
 from config.component import ConfigComponent
 
+from components import Components
+
 
 parser = argparse.ArgumentParser(
     prog="vitalik-lamar",
