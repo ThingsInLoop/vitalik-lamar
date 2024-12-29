@@ -1,0 +1,39 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.0
+  title: LamarConfig
+
+paths: {}
+
+components:
+  schemas:
+    BanningFeature:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: bool
+        verbose:
+          type: bool
+
+    Features:
+      type: object
+      properties:
+        banning:
+          $ref: '#/components/schemas/BanningFeature'
+
+    LamarConfig:
+      type: object
+      properties:
+        chats_settings:
+          type: object
+          description: map by chat id
+          required:
+           - default
+          properties:
+            default:
+              $ref: '#/components/schemas/Features'
+          additionalProperties:
+            $ref: '#/components/schemas/Features'
