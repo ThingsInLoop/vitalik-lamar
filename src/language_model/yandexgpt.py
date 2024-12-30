@@ -1,3 +1,5 @@
+import asyncio
+import concurrent.futures
 from yandex_cloud_ml_sdk import YCloudML
 
 from language_model.iam_token import Token
@@ -28,7 +30,9 @@ class Model:
             samples=fishing_samples,
         )
 
-        result = model.run(message)
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            result = await loop.run_in_executor(pool, model.run, message)
 
         for prediction in result:
             if prediction.confidence >= 0.92 and prediction.label == labels[0]:

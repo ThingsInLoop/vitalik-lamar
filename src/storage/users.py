@@ -3,6 +3,19 @@ import json
 import sys
 
 
+class Component:
+    name = 'users-storage'
+
+    @staticmethod
+    def create(components, settings):
+        self = Component()
+        self.storage = Users(settings)
+        return self
+
+    def get(self):
+        return self.storage
+
+
 class Users:
     create_users_table = """
     CREATE TABLE IF NOT EXISTS users(id, first_name, username, verification, banned_for_message)
@@ -44,10 +57,8 @@ class Users:
     WHERE verification == '{}'
   """
 
-    def __init__(self, config_component):
-        self.config_component = config_component
-        path_to_db = config_component.get_config()["storage"]["db-path"]
-
+    def __init__(self, settings):
+        path_to_db = settings["storage"]["db-path"]
         self.connection = sqlite3.connect(path_to_db)
         cursor = self.connection.cursor()
         cursor.execute(self.create_users_table)
@@ -95,14 +106,8 @@ class Users:
         return [i for i in result.fetchall()]
 
 
-class ConfigMock:
-    def get_config(self):
-        return {"storage": {"db-path": sys.argv[1]}}
-
-
 if __name__ == "__main__":
-    config_mock = ConfigMock()
-    db = Users(config_mock)
+    db = Users({"storage": {"db-path": sys.argv[1]}})
 
     print(db.read_users())
 

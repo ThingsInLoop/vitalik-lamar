@@ -1,9 +1,7 @@
-import asyncio
-
 import yaml
 
 
-class ConfigComponent:
+class InitialConfig:
     config_path: str
     config: dict
 

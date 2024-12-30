@@ -1,13 +1,15 @@
 import asyncio
 import argparse
 
+
+from config import InitialConfig
+from components import Components
+
+
 from telegram.bot import Bot
 from language_model.yandexgpt import Model
-from storage.messages import Messages
-from storage.users import Users
-from config.component import ConfigComponent
 
-from components import Components
+import storage
 
 
 parser = argparse.ArgumentParser(
@@ -22,15 +24,14 @@ parser.add_argument("-c", "--config-path")
 async def main():
     args = parser.parse_args()
 
-    config_component = ConfigComponent(args.config_path)
-    model = Model(config_component)
-    messages_storage = Messages(config_component)
-    users_storage = Users(config_component)
-    bot = Bot(config_component, model, messages_storage, users_storage)
+    initial_config = InitialConfig(args.config_path)
+    components = Components(initial_config.get_config())
 
-    model_task = asyncio.create_task(model.start(), name="language-model")
-    bot_task = asyncio.create_task(bot.start(), name="telegram-bot")
-    await asyncio.gather(*[model_task, bot_task])
+    (components
+        .append(storage.StorageComponent)
+        .append(storage.MessagesComponent)
+        .append(storage.UsersComponent)
+        .start())
 
 
 if __name__ == "__main__":
