@@ -2,6 +2,19 @@ import sqlite3
 import sys
 
 
+class Component:
+    name = 'messages-storage'
+
+    @staticmethod
+    def create(components, settings):
+        self = Component()
+        self.storage = Messages(settings)
+        return self
+
+    def get(self):
+        return self.storage
+
+
 class Messages:
     create_messages_table = """
     CREATE TABLE IF NOT EXISTS messages(id, chat_id, message)
@@ -16,10 +29,8 @@ class Messages:
     SELECT * FROM messages
   """
 
-    def __init__(self, config_component):
-        self.config_component = config_component
-        path_to_db = config_component.get_config()["storage"]["db-path"]
-
+    def __init__(self, settings):
+        path_to_db = settings["storage"]["db-path"]
         self.connection = sqlite3.connect(path_to_db)
         cursor = self.connection.cursor()
         cursor.execute(self.create_messages_table)
@@ -35,14 +46,8 @@ class Messages:
         return [i for i in result.fetchall()]
 
 
-class ConfigMock:
-    def get_config(self):
-        return {"storage": {"db-path": sys.argv[1]}}
-
-
 if __name__ == "__main__":
-    config_mock = ConfigMock()
-    db = Messages(config_mock)
+    db = Messages({"storage": {"db-path": sys.argv[1]}})
 
     print(db.read_messages())
 

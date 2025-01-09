@@ -1,37 +1,29 @@
+import pytest
+
+
 from components import Components
-from components import LazyValue
-
-
-def test_lazy_value():
-    lz = LazyValue(lambda x : x + 1, 1)
-    assert lz() == 2
-    assert lz() == 2
 
 
 class A:
-    @staticmethod
-    def get_name():
-        return 'component-A'
+    name = 'component-A'
 
     @staticmethod
-    def create(components):
-        print('start A')
-        return A()
+    def create(components, settings):
+        self = A()
+        self.value = settings.get('value', 'A')
+        return self
 
     def get(self):
-        return 'A'
+        return self.value
 
 
 class B:
-    @staticmethod
-    def get_name():
-        return 'component-B'
+    name = 'component-B'
 
     @staticmethod
-    def create(components):
-        print('start B')
+    def create(components, settings):
         self = B()
-        self.a = components.find('component-A')
+        self.a = components.find(A)
         return self
 
     def action(self):
@@ -41,8 +33,17 @@ class B:
         return False
 
 
-def test_components():
-    components = Components()
+def test_components_connection():
+    components = Components({'component-A': {}, 'component-B': {}})
     components.append(B).append(A).start()
 
-    assert components.find('component-B').action() == 'A'
+    assert components.find(B).action() == 'A'
+
+
+def test_components_settings():
+    components = Components({'component-A': {'value': 'C'}, 
+                             'component-B': {'value': 'B'}})
+    components.append(B).append(A).start()
+
+    assert components.find(B).action() == 'C'
+

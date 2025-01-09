@@ -4,6 +4,37 @@ from enum import Enum
 
 from telebot.util import quick_markup
 
+import storage
+import language_model
+import telegram
+
+
+class Component:
+    name = 'banning-feature'
+
+    @staticmethod
+    def create(components, settings):
+        self = Component()
+        storage_component = components.find(storage.StorageComponent)
+        llm = components.find(language_model.LanguageModelComponent).get()
+        bot = components.find(telegram.BotComponent).get()
+
+        self.banning_feature = BanningFeature(storage_component.get_users(),
+                                              storage_component.get_messages(),
+                                              bot,
+                                              llm)
+
+        @bot.callback_query_handler(func=self.banning_feature.check_callback)
+        async def banning_feature_callback(callback):
+            await self.banning_feature.process_callback(callback)
+
+        @bot.message_handler(func=self.banning_feature.check_message)
+        async def banning_feature_message(message):
+            await self.banning_feature.process_message(message)
+
+        return self
+        
+
 
 def _pardon_markup(text, message):
     callback_data = {
@@ -135,12 +166,12 @@ class BanningFeature:
                 await self.bot.reply_to(message, congratulations)
             return
         
-        if not self.users.is_banned(message.from_user):
-            self.users.ban(message)
-
         if message.chat.type == 'private':
             await self.bot.reply_to(message, 'Я бы за такое забанил, но не буду')
             return
+
+        if not self.users.is_banned(message.from_user):
+            self.users.ban(message)
 
         if not await self._lamar_is_admin(message.chat.id):
             await self._ask_for_ban_with_callback(message)
