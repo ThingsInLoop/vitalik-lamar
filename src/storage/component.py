@@ -12,9 +12,9 @@ class Component:
         self.messages = components.find(MessagesComponent).get()
         return self
 
-    def users(self):
+    def get_users(self):
         return self.users
 
-    def messages(self):
+    def get_messages(self):
         return self.messages
 

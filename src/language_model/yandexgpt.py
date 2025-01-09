@@ -2,23 +2,31 @@ import asyncio
 import concurrent.futures
 from yandex_cloud_ml_sdk import YCloudML
 
-from language_model.iam_token import Token
-from language_model.iam_token import iam_token_polling
+from language_model import IamTokenComponent
 from language_model.fishing_samples import fishing_samples
+
+
+class Component:
+    name = 'language-model'
+
+    @staticmethod
+    def create(components, settings):
+        self = Component()
+        token = components.find(IamTokenComponent).get()
+        self.model = Model(settings, token)
+        return self
+
+    def get(self):
+        return self.model
 
 
 labels=["фишинг", "прочее"]
 
 class Model:
-    def __init__(self, config_component):
-        self.config_component = config_component
-        settings = config_component.get_config()["language-model"]["yandexgpt"]
-
+    def __init__(self, settings, token):
+        settings = settings["yandexgpt"]
         self.yc_folder_id = settings["folder-id"]
-        self.token = Token(settings["oauth"])
-
-    async def start(self):
-        await iam_token_polling(self.token)
+        self.token = token
 
     async def is_fishing(self, message: str):
         iam_token = await self.token.get()

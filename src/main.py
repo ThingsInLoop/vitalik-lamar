@@ -1,15 +1,12 @@
 import asyncio
 import argparse
 
-
 from config import InitialConfig
 from components import Components
 
-
-from telegram.bot import Bot
-from language_model.yandexgpt import Model
-
 import storage
+import language_model
+import telegram
 
 
 parser = argparse.ArgumentParser(
@@ -28,10 +25,18 @@ async def main():
     components = Components(initial_config.get_config())
 
     (components
+        .append(telegram.BanningFeatureComponent)
+        .append(telegram.BotComponent)
+        .append(language_model.LanguageModelComponent)
+        .append(language_model.IamTokenComponent)
         .append(storage.StorageComponent)
         .append(storage.MessagesComponent)
         .append(storage.UsersComponent)
         .start())
+
+    print('Start polling!')
+
+    await components.find(telegram.BotComponent).get().polling()
 
 
 if __name__ == "__main__":
