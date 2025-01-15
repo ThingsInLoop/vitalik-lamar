@@ -1,5 +1,4 @@
 from telebot.async_telebot import AsyncTeleBot
-from collections.abc import Callable
 
 
 class Component:

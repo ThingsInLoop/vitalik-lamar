@@ -25,7 +25,8 @@ async def main():
     components = Components(initial_config.get_config())
 
     (components
-        .append(telegram.BanningFeatureComponent)
+        .append(telegram.features.PingFeatureComponent)
+        .append(telegram.features.BanningFeatureComponent)
         .append(telegram.BotComponent)
         .append(language_model.LanguageModelComponent)
         .append(language_model.IamTokenComponent)
