@@ -15,8 +15,9 @@ class BotComponentMock:
 
 
 class BotMock:
-    message_filters = []
-    replies = []
+    def __init__(self):
+        self.message_filters = []
+        self.replies = []
 
     def message_handler(self, func=lambda: True):
         def wrapper(action):
