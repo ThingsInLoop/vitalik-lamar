@@ -137,6 +137,12 @@ class Users:
         self.verified_users.add(user_id)
         
 
+class BanReason(Enum):
+    fishing = 'спам'
+    too_many_custom_emojis = 'эмодзи спам'
+    already_banned = 'когда-то уже банил'
+        
+
 class BanningFeature:
     def __init__(self, users_storage, messages_storage, bot, lang_model):
         self.users = Users(users_storage, messages_storage)
@@ -150,24 +156,13 @@ class BanningFeature:
 
 
     async def process_message(self, message):
-        if not (self.users.is_banned(message.from_user) or 
-                _too_many_custom_emojis(message) or
-                await self.lang_model.is_fishing(message.text)
-        ):
+        ban_reason = await self._get_ban_reason(message)
+        if ban_reason is None:
             self.users.verify(message.from_user)
-            if self.users.is_verified(message.from_user):
-                congratulations = await self.lang_model.prompt(
-                    f'Твой друг {message.from_user.first_name} победил в игру ' \
-                     '"Рулетка Виталиков", которая проводится среди виталиков.' \
-                     'Поздравь друга с победой и пообещай, что не будешь ' \
-                     'его банить. Используй имя в его уменшительно-ласкательной ' \
-                     'форме на русском языке.'
-                )
-                await self.bot.reply_to(message, congratulations)
             return
         
         if message.chat.type == 'private':
-            await self.bot.reply_to(message, 'Я бы за такое забанил, но не буду')
+            await self.bot.reply_to(message, f'{ban_reason.value}')
             return
 
         if not self.users.is_banned(message.from_user):
@@ -177,7 +172,7 @@ class BanningFeature:
             await self._ask_for_ban_with_callback(message)
             return
 
-        await self._ban_with_callback(message)
+        await self._ban_with_callback(message, ban_reason)
 
 
     def check_callback(self, callback):
@@ -189,6 +184,8 @@ class BanningFeature:
         callback_data = ast.literal_eval(callback.data)
         if callback_data['type'] == 'banning-pardon':
             username = self.users.get_username(int(callback_data['user_id']))
+            if callback.message.reply_to_message is not None:
+                username = callback.message.reply_to_message.from_user.first_name
 
             admins = await self.bot.get_chat_administrators(callback.message.chat.id)
             if not any(member.user.id == callback.from_user.id for member in admins):
@@ -202,16 +199,24 @@ class BanningFeature:
                 return
 
             await self._remove_markup(callback.message)
-
-            if callback.message.reply_to_message is not None:
-                username = callback.message.reply_to_message.from_user.first_name
             await self._pardon(callback_data['user_id'], username, callback.message.chat)
 
 
-    async def _ban_with_callback(self, for_message):
+    async def _get_ban_reason(self, message):
+        if self.users.is_banned(message.from_user):
+            return BanReason.already_banned
+        if  _too_many_custom_emojis(message):
+            return BanReason.too_many_custom_emojis
+        if await self.lang_model.is_fishing(message.text):
+            return BanReason.fishing
+        return None
+
+
+
+    async def _ban_with_callback(self, for_message, reason):
         try:
             await self.bot.ban_chat_member(for_message.chat.id, for_message.from_user.id)
-        except:
+        except Exception:
             await self._ask_for_ban_with_callback(for_message)
             return
 
@@ -220,12 +225,7 @@ class BanningFeature:
         username = (('@' + for_message.from_user.username) 
                          if for_message.from_user.username is not None 
                          else for_message.from_user.first_name)
-        notification = await self.lang_model.prompt(
-            f'Ты забанил {username} за спам. Кратко опиши ' \
-            f'случившееся. Расскажи об этом так, будто ты строгий полицейский ' \
-            f'и арестовал преступника.')
-
-        notification = _escape_markdown(notification)
+        notification = _escape_markdown(f'Забанил {username}. Повод: {reason.value}')
         escaped_message = _escape_markdown(for_message.text)
         notification += f'\n\nСообщение: ||{escaped_message}||'
         
@@ -277,6 +277,5 @@ class BanningFeature:
 
     async def _lamar_is_admin(self, chat_id: int):
         admins = await self.bot.get_chat_administrators(chat_id)
-        me = await self.bot.get_me()
-        return any(member.user.id == me.id for member in admins)
+        return any(member.user.id == self.bot.user.id for member in admins)
 

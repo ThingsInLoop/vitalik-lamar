@@ -35,9 +35,9 @@ class Components:
 
 
     def start(self):
-        for component in self.components:
-            if not self.config[component.name].get('enabled', True):
+        for component_name in self.components:
+            if not self.config[component_name].get('enabled', True):
                 continue
 
-            self.components[component]()
+            self.components[component_name]()
         

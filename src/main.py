@@ -7,6 +7,7 @@ from components import Components
 import storage
 import language_model
 import telegram
+import telegram.features
 
 
 parser = argparse.ArgumentParser(
