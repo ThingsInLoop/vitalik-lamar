@@ -32,7 +32,6 @@ class Components:
 
 
     def start(self):
-        print(self.components)
         for component_name in self.components:
             if not self.config[component_name].get('enabled', True):
                 continue

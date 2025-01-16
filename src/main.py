@@ -1,5 +1,6 @@
 import asyncio
 import argparse
+import logging
 
 from config import InitialConfig
 from components import Components
@@ -36,7 +37,8 @@ async def main():
         .append(storage.UsersComponent)
         .start())
 
-    print('Start polling!')
+    logging.basicConfig(level=logging.INFO)
+    logging.info('Start polling!')
 
     await components.find(telegram.BotComponent).get().polling()
 
