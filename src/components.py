@@ -17,10 +17,6 @@ class Components:
         return self.components[component.name]()
 
 
-    def find_str(self, name):
-        return self.components[name]()
-
-
     def append(self, component):
         assert component.name in self.config, f'Component {component.name} isn\'t ' \
                                               f'declared in config'
