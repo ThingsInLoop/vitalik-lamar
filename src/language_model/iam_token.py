@@ -21,9 +21,8 @@ class Component:
 
 
 class Token:
-    iam_token = None
-
     def __init__(self, settings):
+        self.iam_token = None
         self.url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
         self.request = {"yandexPassportOauthToken": settings['oauth']}
         try:

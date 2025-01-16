@@ -1,5 +1,6 @@
 import telegram
 
+
 class Component:
     name = 'ping-feature'
 

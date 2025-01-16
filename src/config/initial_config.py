@@ -2,9 +2,6 @@ import yaml
 
 
 class InitialConfig:
-    config_path: str
-    config: dict
-
     def __init__(self, config_path):
         self.config_path = config_path
         self.config = self.read_config()

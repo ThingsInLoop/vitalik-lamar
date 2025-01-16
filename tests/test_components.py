@@ -1,6 +1,3 @@
-import pytest
-
-
 from components import Components
 
 

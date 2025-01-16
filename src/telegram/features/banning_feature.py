@@ -1,8 +1,8 @@
 import ast
-import re
 from enum import Enum
 
 from telebot.util import quick_markup
+from telebot.formatting import escape_markdown
 
 import storage
 import language_model
@@ -51,11 +51,6 @@ def _pardon_markup(text, message):
     )
 
 
-def _escape_markdown(text) -> str:
-    escape_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
-
-
 def _too_many_custom_emojis(message):
     if message.entities is None:
         return False
@@ -71,11 +66,11 @@ class UserVerification(Enum):
 
 
 class Users:
-    verifying_users = dict()
-    verified_users = set()
-    banned_users = set()
-
     def __init__(self, users_storage, messages_storage):
+        self.verifying_users = dict()
+        self.verified_users  = set()
+        self.banned_users    = set()
+
         self._users_storage = users_storage
         self._messages_storage = messages_storage
         for user in users_storage.read_users_by_verification(
@@ -225,8 +220,8 @@ class BanningFeature:
         username = (('@' + for_message.from_user.username) 
                          if for_message.from_user.username is not None 
                          else for_message.from_user.first_name)
-        notification = _escape_markdown(f'Забанил {username}. Повод: {reason.value}')
-        escaped_message = _escape_markdown(for_message.text)
+        notification = escape_markdown(f'Забанил {username}. Повод: {reason.value}')
+        escaped_message = escape_markdown(for_message.text)
         notification += f'\n\nСообщение: ||{escaped_message}||'
         
       
