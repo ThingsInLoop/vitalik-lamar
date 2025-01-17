@@ -8,7 +8,6 @@ from components import Components
 import storage
 import language_model
 import telegram
-import telegram.features
 
 
 parser = argparse.ArgumentParser(
@@ -27,8 +26,8 @@ async def main():
     components = Components(initial_config.get_config())
 
     (components
-        .append(telegram.features.PingFeatureComponent)
-        .append(telegram.features.BanningFeatureComponent)
+        .append(telegram.PingFeatureComponent)
+        .append(telegram.BanningFeatureComponent)
         .append(telegram.BotComponent)
         .append(language_model.LanguageModelComponent)
         .append(language_model.IamTokenComponent)

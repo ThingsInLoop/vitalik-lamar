@@ -1,6 +1,6 @@
 import pytest
 
-import telegram.features
+import telegram
 from bot_mock import BotComponentMock
 from components import Components
 
@@ -10,7 +10,7 @@ pytest_plugins = ('pytest_asyncio',)
 @pytest.mark.asyncio
 async def test_ping_feature():
     components = Components({'telegram-bot': {}, 'ping-feature': {}})
-    components.append(telegram.features.PingFeatureComponent).append(BotComponentMock).start()
+    components.append(telegram.PingFeatureComponent).append(BotComponentMock).start()
 
     bot_mock = components.find(BotComponentMock).get()
 
