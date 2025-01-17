@@ -8,7 +8,7 @@ class UserVerification(Enum):
 
 class Users:
     def __init__(self, users_storage, messages_storage):
-        self.verifying_users = dict()
+        self.unverified_users = dict()
         self.verified_users  = set()
         self.banned_users    = set()
 
@@ -36,8 +36,8 @@ class Users:
         return user.id in self.banned_users
 
     def verify(self, user):
-        verifications = self.verifying_users.get(user.id, 0) + 1
-        self.verifying_users[user.id] = verifications
+        verifications = self.unverified_users.get(user.id, 0) + 1
+        self.unverified_users[user.id] = verifications
         if verifications < 3:
             return
         self._users_storage.add_user(
@@ -45,7 +45,7 @@ class Users:
             user.first_name,
             user.username,
             UserVerification.verified.value)
-        self.verifying_users.pop(user.id, None)
+        self.unverified_users.pop(user.id, None)
         self.verified_users.add(user.id)
         
     def ban(self, for_message):
@@ -63,12 +63,12 @@ class Users:
             for_message.chat.id,
             for_message.text)
 
-        self.verifying_users.pop(for_message.from_user.id, None)
+        self.unverified_users.pop(for_message.from_user.id, None)
         self.banned_users.add(for_message.from_user.id)
 
     def pardon(self, user_id: int):
         self._users_storage.update_verification(user_id, UserVerification.verified.value)
-        self.verifying_users.pop(user_id, None)
+        self.unverified_users.pop(user_id, None)
         self.banned_users.discard(user_id)
         self.verified_users.add(user_id)
  
