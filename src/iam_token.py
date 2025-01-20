@@ -1,7 +1,6 @@
 import asyncio
 import json
 import concurrent.futures
-
 import requests
 
 
@@ -29,7 +28,7 @@ class Token:
         finally:
             pass
 
-    async def get(self):
+    def get(self):
         return self.iam_token
 
     def update(self):

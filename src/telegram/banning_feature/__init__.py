@@ -1,10 +1,12 @@
 import ast
+import aiohttp
 from enum import Enum
 
 from telebot.formatting import escape_markdown
 
 import storage
 import language_model
+import speech
 import telegram
 import telegram.banning_feature.utils as utils
 from telegram.banning_feature.users import Users
@@ -18,18 +20,20 @@ class Component:
         self = Component()
         storage_component = components.find(storage.StorageComponent)
         llm = components.find(language_model.LanguageModelComponent).get()
+        speechkit = components.find(speech.SpeechComponent).get()
         bot = components.find(telegram.BotComponent).get()
 
         self.banning_feature = BanningFeature(storage_component.get_users(),
                                               storage_component.get_messages(),
                                               bot,
-                                              llm)
+                                              llm,
+                                              speechkit)
 
         @bot.callback_query_handler(func=self.banning_feature.check_callback)
         async def banning_feature_callback(callback):
             await self.banning_feature.process_callback(callback)
 
-        @bot.message_handler(func=self.banning_feature.check_message)
+        @bot.message_handler(func=self.banning_feature.check_message, content_types=['text', 'voice'])
         async def banning_feature_message(message):
             await self.banning_feature.process_message(message)
 
@@ -38,24 +42,29 @@ class Component:
 
 class BanReason(Enum):
     fishing = 'спам'
+    voice_fishing = 'голосовой спам'
     too_many_custom_emojis = 'эмодзи спам'
     already_banned = 'когда-то уже банил'
         
 
 class BanningFeature:
-    def __init__(self, users_storage, messages_storage, bot, lang_model):
+    def __init__(self, users_storage, messages_storage, bot, lang_model, speechkit):
         self.users = Users(users_storage, messages_storage)
         self.messages_storage = messages_storage
         self.bot = bot
         self.lang_model = lang_model
+        self.speechkit = speechkit
 
 
     def check_message(self, message):
         return not self.users.is_verified(message.from_user)
 
-
     async def process_message(self, message):
-        ban_reason = await self._get_ban_reason(message)
+        try:
+            ban_reason = await self._get_ban_reason(message)
+        except Exception:
+            return
+        
         if ban_reason is None:
             self.users.verify(message.from_user)
             return
@@ -78,7 +87,6 @@ class BanningFeature:
         callback_data = ast.literal_eval(callback.data)
         return callback_data['type'] in ('banning-pardon')
 
-        
     async def process_callback(self, callback):
         callback_data = ast.literal_eval(callback.data)
         if callback_data['type'] == 'banning-pardon':
@@ -104,10 +112,19 @@ class BanningFeature:
     async def _get_ban_reason(self, message):
         if self.users.is_banned(message.from_user):
             return BanReason.already_banned
-        if  utils.too_many_custom_emojis(message):
+
+        if message.voice is not None:
+            voice_url = await self.bot.get_file_url(message.voice.file_id)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(voice_url) as response:
+                    voice_file = await response.read()
+
+            message.text = await self.speechkit.recognize(voice_file)
+
+        if utils.too_many_custom_emojis(message):
             return BanReason.too_many_custom_emojis
         if await self.lang_model.is_fishing(message.text):
-            return BanReason.fishing
+            return BanReason.fishing if message.voice is None else BanReason.voice_fishing
         return None
 
 
@@ -126,7 +143,8 @@ class BanningFeature:
                          else for_message.from_user.first_name)
         notification = escape_markdown(f'Забанил {username}. Повод: {reason.value}')
         escaped_message = escape_markdown(for_message.text)
-        notification += f'\n\nСообщение: ||{escaped_message}||'
+        prefix = 'Сообщение' if for_message.voice is None else 'Голосовое сообщение'
+        notification += f'\n\n{prefix}: ||{escaped_message}||'
         
       
         await self.bot.send_message(

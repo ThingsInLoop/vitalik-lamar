@@ -5,9 +5,11 @@ import logging
 from config import InitialConfig
 from components import Components
 
+import speech
 import storage
 import language_model
 import telegram
+import iam_token
 
 
 parser = argparse.ArgumentParser(
@@ -26,11 +28,12 @@ async def main():
     components = Components(initial_config.get_config())
 
     (components
+        .append(speech.SpeechComponent)
         .append(telegram.PingFeatureComponent)
         .append(telegram.BanningFeatureComponent)
         .append(telegram.BotComponent)
         .append(language_model.LanguageModelComponent)
-        .append(language_model.IamTokenComponent)
+        .append(iam_token.Component)
         .append(storage.StorageComponent)
         .append(storage.MessagesComponent)
         .append(storage.UsersComponent)
@@ -41,6 +44,18 @@ async def main():
 
     await components.find(telegram.BotComponent).get().polling()
 
+    # with open('/home/corp.1440.space/a.kamalov/Music/other.ogg', 'rb') as f:
+    #     audio = f.read()
+    # text = await components.find(speech.SpeechComponent).get().recognize(audio)
+    # print(text)
+    # print(await components.find(language_model.LanguageModelComponent).get().is_fishing(text))
+
+    
+    # with open('/home/corp.1440.space/a.kamalov/Music/fishing.ogg', 'rb') as f:
+    #     audio = f.read()
+    # text = await components.find(speech.SpeechComponent).get().recognize(audio)
+    # print(text)
+    # print(await components.find(language_model.LanguageModelComponent).get().is_fishing(text))
 
 if __name__ == "__main__":
     asyncio.run(main())

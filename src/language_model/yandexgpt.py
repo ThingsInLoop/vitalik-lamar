@@ -2,7 +2,7 @@ import asyncio
 import concurrent.futures
 from yandex_cloud_ml_sdk import YCloudML
 
-from language_model import IamTokenComponent
+import iam_token
 from language_model.fishing_samples import fishing_samples
 
 
@@ -12,7 +12,7 @@ class Component:
     @staticmethod
     def create(components, settings):
         self = Component()
-        token = components.find(IamTokenComponent).get()
+        token = components.find(iam_token.Component).get()
         self.model = Model(settings, token)
         return self
 
@@ -29,7 +29,7 @@ class Model:
         self.token = token
 
     async def is_fishing(self, message: str):
-        iam_token = await self.token.get()
+        iam_token = self.token.get()
         sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
         model = sdk.models.text_classifiers("yandexgpt").configure(
@@ -49,7 +49,7 @@ class Model:
         return False
 
     async def prompt(self, message: str):
-        iam_token = await self.token.get()
+        iam_token = self.token.get()
         sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
         model = sdk.models.completions("yandexgpt").configure(temperature=1.0)
