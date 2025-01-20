@@ -114,6 +114,9 @@ class BanningFeature:
             return BanReason.already_banned
 
         if message.voice is not None:
+            if message.voice.file_size > 1024 * 1024:
+                return None
+
             voice_url = await self.bot.get_file_url(message.voice.file_id)
             async with aiohttp.ClientSession() as session:
                 async with session.get(voice_url) as response:
