@@ -28,6 +28,7 @@ async def main():
     components = Components(initial_config.get_config())
 
     (components
+        .append(telegram.VoiceToTextFeatureComponent)
         .append(speech.SpeechComponent)
         .append(telegram.PingFeatureComponent)
         .append(telegram.BanningFeatureComponent)
