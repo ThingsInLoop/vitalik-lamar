@@ -21,7 +21,7 @@ async def test_ping_feature():
     message.chat = Empty()
     message.chat.type = 'private'
     message.text = 'ping'
-    assert await bot_mock.test_message(message) == ['Ping']
+    assert await bot_mock.test_message(message) == ['pong']
 
     message.chat.type = 'private'
     message.text = 'pong'
