@@ -1,4 +1,6 @@
 import tempfile
+import asyncio
+import concurrent.futures
 
 from speechkit import model_repository, configure_credentials, creds
 from speechkit.stt import AudioProcessingType
@@ -42,6 +44,8 @@ class YandexSpeech:
 
         with tempfile.NamedTemporaryFile() as file:
             file.write(audio)
-            result = model.transcribe_file(file.name)
+            loop = asyncio.get_running_loop()
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                result = await loop.run_in_executor(pool, model.transcribe_file, file.name)
 
         return str(result[0])
