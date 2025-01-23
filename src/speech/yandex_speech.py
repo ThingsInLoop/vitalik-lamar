@@ -1,5 +1,7 @@
-import aiohttp
-import json
+import tempfile
+
+from speechkit import model_repository, configure_credentials, creds
+from speechkit.stt import AudioProcessingType
 
 import iam_token
 
@@ -22,18 +24,24 @@ class YandexSpeech:
     def __init__(self, token, settings):
         self.token = token
         self.folder_id = settings['folder-id']
-        self.recognition_url = 'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize'
         
     async def recognize(self, audio):
         iam_token = self.token.get()
-        headers = {'Authorization': f'Bearer {iam_token}'}
-        params = {
-            'lang': 'ru-RU',
-            'folderId': self.folder_id,
-            'format': 'oggopus',
-        }
+        configure_credentials(
+           yandex_credentials=creds.YandexCredentials(
+              iam_token=iam_token,
+              folder_id=self.folder_id,
+           )
+        )
+        
+        model = model_repository.recognition_model()
 
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post(self.recognition_url, params=params, data=audio) as response:
-                return json.loads(await response.text())['result']
+        model.model = 'general'
+        model.language = 'ru-RU'
+        model.audio_processing_type = AudioProcessingType.Full
 
+        with tempfile.NamedTemporaryFile() as file:
+            file.write(audio)
+            result = model.transcribe_file(file.name)
+
+        return result[0]  
