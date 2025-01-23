@@ -33,9 +33,6 @@ class YandexSpeech:
             'format': 'oggopus',
         }
 
-        with open('/var/tmp/file.ogg', 'wb') as file:
-            file.write(audio)
-
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post(self.recognition_url, params=params, data=audio) as response:
                 return json.loads(await response.text())['result']
