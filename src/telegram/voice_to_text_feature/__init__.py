@@ -73,6 +73,8 @@ class VoiceToText:
                 voice_file = await response.read()
 
         text = await self.speechkit.recognize(voice_file)
+        if text == '':
+            text = '*Никто ничего не сказал*'
         await self.bot.reply_to(message, text)
 
 
@@ -118,4 +120,6 @@ class VoiceToText:
             return
             
         text = await self.speechkit.recognize(voice_bytes)
+        if text == '':
+            text = '*Никто ничего не сказал*'
         await self.bot.reply_to(message, text)
