@@ -73,7 +73,7 @@ class VoiceToText:
                 voice_file = await response.read()
 
         text = await self.speechkit.recognize(voice_file)
-        await self.bot.reply_to(message, text if len(text) != 0 else '*Никто ничего не сказал*')
+        await self.bot.reply_to(message, text if len(text.strip()) != 0 else '*Никто ничего не сказал*')
 
 
     def check_video(self, message):
@@ -118,4 +118,4 @@ class VoiceToText:
             return
             
         text = await self.speechkit.recognize(voice_bytes)
-        await self.bot.reply_to(message, text if len(text) != 0 else '*Никто ничего не сказал*')
+        await self.bot.reply_to(message, text if len(text.strip()) != 0 else '*Никто ничего не сказал*')
