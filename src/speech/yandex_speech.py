@@ -44,4 +44,4 @@ class YandexSpeech:
             file.write(audio)
             result = model.transcribe_file(file.name)
 
-        return result[0]  
+        return result[0] if isinstance(result[0], str) else ''
