@@ -28,9 +28,13 @@ class YandexSpeech:
         iam_token = self.token.get()
         headers = {'Authorization': f'Bearer {iam_token}'}
         params = {
-            'lang': 'auto',
-            'folderId': self.folder_id
+            'lang': 'ru-RU',
+            'folderId': self.folder_id,
+            'format': 'oggopus',
         }
+
+        with open('/var/tmp/file.ogg', 'wb') as file:
+            file.write(audio)
 
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post(self.recognition_url, params=params, data=audio) as response:
