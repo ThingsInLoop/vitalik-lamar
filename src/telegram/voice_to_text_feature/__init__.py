@@ -26,7 +26,6 @@ class VoiceToText:
         self.bot = bot
         self.speechkit = speechkit
         self.users = users
-        self.lamar_tag = settings['lamar-tag']
         self.file_len_cap = settings.get('file-len-cap', 30)
 
         @bot.message_handler(func=self.check_voice, content_types=['text', 'voice'])
@@ -39,7 +38,7 @@ class VoiceToText:
         
 
     def check_voice(self, message):
-        if message.text != self.lamar_tag and message.chat.type != 'private':
+        if message.text != f'@{self.bot.user.username}' and message.chat.type != 'private':
             return False
 
         return message.voice is not None or (
@@ -48,7 +47,7 @@ class VoiceToText:
 
        
     def check_video(self, message):
-        if message.text != self.lamar_tag and message.chat.type != 'private':
+        if message.text != f'@{self.bot.user.username}' and message.chat.type != 'private':
             return False
 
         return message.video_note is not None or (
