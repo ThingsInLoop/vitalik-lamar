@@ -11,7 +11,7 @@ python dependencies:
 
  components schema:
 
- ```mermaid`
+ ```mermaid
  flowchart TD
     voice-to-text-feature;
     speech;
@@ -35,4 +35,4 @@ python dependencies:
     storage --> messages-storage;
     storage --> users-storage;
     language-model --> iam-token;
-````
+```
