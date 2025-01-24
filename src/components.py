@@ -1,9 +1,12 @@
+import inspect
+
 from utils import LazyValue
 
 
 class Components:
     def __init__(self, config):
         self.components = {}
+        self.dependencies_map = {}
         self.config = config
 
 
@@ -14,6 +17,11 @@ class Components:
         assert self.config[component.name].get('enabled', True), \
                    f'Component {component.name} is disabled by config'
 
+        dependent = inspect.stack()[1].frame.f_locals['self'].__class__.name
+        dependencies= self.dependencies_map.get(dependent, set())
+        dependencies.add(component.name)
+        self.dependencies_map[dependent] = dependencies
+        
         return self.components[component.name]()
 
 
@@ -33,4 +41,14 @@ class Components:
                 continue
 
             self.components[component_name]()
-        
+            dependencies = self.dependencies_map.get(component_name, set())
+            self.dependencies_map[component_name] = dependencies
+
+
+    def draw(self):
+        print('flowchart TD')
+        for name, _ in self.dependencies_map.items():
+            print(f'    {name};')
+        for name, dependencies in self.dependencies_map.items():
+            for dependency in dependencies:
+                print(f'    {name} --> {dependency};')
