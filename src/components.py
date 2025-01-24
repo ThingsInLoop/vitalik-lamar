@@ -51,4 +51,4 @@ class Components:
             print(f'    {name};')
         for name, dependencies in self.dependencies_map.items():
             for dependency in dependencies:
-                print(f'    {name} --> {dependency};')
+                print(f'    {dependency} --> {name};')

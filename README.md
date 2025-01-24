@@ -1,6 +1,6 @@
 # vitalik-lamar
 
-python dependencies:
+*python dependencies*:
  - pyyaml
  - pyTelegramBotAPI
  - yandex-cloud-ml-sdk
@@ -9,10 +9,10 @@ python dependencies:
  - moviepy
 
 
- components schema:
+ *components flowchart*:
 
  ```mermaid
- flowchart TD
+flowchart TD
     voice-to-text-feature;
     speech;
     ping-feature;
@@ -23,16 +23,16 @@ python dependencies:
     iam-token;
     messages-storage;
     users-storage;
-    voice-to-text-feature --> speech;
-    voice-to-text-feature --> telegram-bot;
-    voice-to-text-feature --> users-storage;
-    speech --> iam-token;
-    ping-feature --> telegram-bot;
-    banning-feature --> speech;
-    banning-feature --> language-model;
-    banning-feature --> storage;
-    banning-feature --> telegram-bot;
-    storage --> messages-storage;
-    storage --> users-storage;
-    language-model --> iam-token;
+    users-storage --> voice-to-text-feature;
+    telegram-bot --> voice-to-text-feature;
+    speech --> voice-to-text-feature;
+    iam-token --> speech;
+    telegram-bot --> ping-feature;
+    storage --> banning-feature;
+    telegram-bot --> banning-feature;
+    language-model --> banning-feature;
+    speech --> banning-feature;
+    users-storage --> storage;
+    messages-storage --> storage;
+    iam-token --> language-model;
 ```
