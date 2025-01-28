@@ -27,6 +27,7 @@ class Model:
         settings = settings["yandexgpt"]
         self.yc_folder_id = settings["folder-id"]
         self.token = token
+        self.fishing_enough_confidence = settings.get('fishing-enough-confidence', 0.8)
 
     async def is_fishing(self, message: str):
         iam_token = self.token.get()
@@ -46,7 +47,9 @@ class Model:
             print(e)
 
         for prediction in result:
-            if prediction.confidence >= 0.92 and prediction.label == labels[0]:
+            if (prediction.confidence >= self.fishing_enough_confidence and
+                prediction.label == labels[0]
+            ):
                 return True
 
         return False
