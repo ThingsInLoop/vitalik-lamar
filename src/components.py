@@ -17,8 +17,11 @@ class Components:
         assert self.config[component.name].get('enabled', True), \
                    f'Component {component.name} is disabled by config'
 
-        dependent = inspect.stack()[1].frame.f_locals['self'].__class__.name
-        dependencies= self.dependencies_map.get(dependent, set())
+        upper_frame = inspect.stack()[1].frame
+        dependent = 'outer-world'
+        if 'self' in upper_frame.f_locals:
+            dependent = inspect.stack()[1].frame.f_locals['self'].__class__.name
+        dependencies = self.dependencies_map.get(dependent, set())
         dependencies.add(component.name)
         self.dependencies_map[dependent] = dependencies
         

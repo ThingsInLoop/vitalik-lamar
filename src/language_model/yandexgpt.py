@@ -38,9 +38,12 @@ class Model:
             samples=fishing_samples,
         )
 
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            result = await loop.run_in_executor(pool, model.run, message)
+        try:
+            loop = asyncio.get_running_loop()
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                result = await loop.run_in_executor(pool, model.run, message)
+        except Exception as e:
+            print(e)
 
         for prediction in result:
             if prediction.confidence >= 0.92 and prediction.label == labels[0]:
