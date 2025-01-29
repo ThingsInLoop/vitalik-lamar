@@ -13,12 +13,13 @@ import iam_token
 
 
 parser = argparse.ArgumentParser(
-    prog="vitalik-lamar",
-    description="Telegram bot for VITALIK RC group",
-    epilog="Be humble",
+    prog='vitalik-lamar',
+    description='Telegram bot for VITALIK RC group',
+    epilog='Be humble',
 )
 
-parser.add_argument("-c", "--config-path")
+parser.add_argument('-c', '--config-path')
+parser.add_argument('--mode', nargs='?', default='polling')
 
 
 async def main():
@@ -43,8 +44,11 @@ async def main():
     logging.basicConfig(level=logging.INFO)
     logging.info('Start polling!')
 
-    await components.find(telegram.BotComponent).get().polling()
+    if args.mode == 'polling':
+        await components.find(telegram.BotComponent).get().polling()
+    if args.mode == 'draw':
+        components.draw()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(main())

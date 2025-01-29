@@ -13,7 +13,6 @@
 
  ```mermaid
 flowchart TD
-    voice-to-text-feature;
     speech;
     ping-feature;
     banning-feature;
@@ -23,16 +22,13 @@ flowchart TD
     iam-token;
     messages-storage;
     users-storage;
-    users-storage --> voice-to-text-feature;
-    telegram-bot --> voice-to-text-feature;
-    speech --> voice-to-text-feature;
     iam-token --> speech;
     telegram-bot --> ping-feature;
-    storage --> banning-feature;
     telegram-bot --> banning-feature;
     language-model --> banning-feature;
+    storage --> banning-feature;
     speech --> banning-feature;
-    users-storage --> storage;
     messages-storage --> storage;
+    users-storage --> storage;
     iam-token --> language-model;
 ```

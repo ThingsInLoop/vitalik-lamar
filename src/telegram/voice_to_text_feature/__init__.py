@@ -13,19 +13,17 @@ class Component:
     @staticmethod
     def create(components, settings):
         self = Component()
-        users = components.find(storage.UsersComponent).get()
         bot = components.find(telegram.BotComponent).get()
         speechkit = components.find(speech.SpeechComponent).get()
 
-        self.voice_to_text = VoiceToText(settings, bot, speechkit, users)
+        self.voice_to_text = VoiceToText(settings, bot, speechkit)
         return self
 
 
 class VoiceToText:
-    def __init__(self, settings, bot, speechkit, users):
+    def __init__(self, settings, bot, speechkit):
         self.bot = bot
         self.speechkit = speechkit
-        self.users = users
         self.file_len_cap = settings.get('file-len-cap', 30)
 
         @bot.message_handler(func=self.check_voice, content_types=['text', 'voice'])
@@ -56,9 +54,6 @@ class VoiceToText:
 
     
     async def process_voice(self, message):
-        if not await self._validate_user(message):
-            return
-
         media_message = await self._get_media_message(message)
         if media_message is None:
             return
@@ -71,9 +66,6 @@ class VoiceToText:
 
        
     async def process_video(self, message):
-        if not await self._validate_user(message):
-            return
-
         media_message = await self._get_media_message(message)
         if media_message is None:
             return
@@ -84,16 +76,8 @@ class VoiceToText:
           
         text = await self.speechkit.recognize(voice_bytes)
         await self.bot.reply_to(media_message, f'"{text}"' if len(text.strip()) != 0 else '*Никто ничего не сказал*')
-
-
-    async def _validate_user(self, message):
-        if message.chat.type == 'private' and self.users.get_user(message.from_user.id) is None:
-            await self.bot.reply_to(message, 'Я тебя еще не знаю. Чтобы я тебя запомнил, '
-                                             'попиши что-то в чате, где есть я')
-            return False
-        return True
-   
         
+
     async def _get_media_message(self, message):
         media = utils.choose_media(message)
         if media is None:
