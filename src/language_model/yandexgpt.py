@@ -20,12 +20,12 @@ class Component:
         return self.model
 
 
-labels=["фишинг", "прочее"]
+labels=['фишинг', 'прочее']
 
 class Model:
     def __init__(self, settings, token):
-        settings = settings["yandexgpt"]
-        self.yc_folder_id = settings["folder-id"]
+        settings = settings['yandexgpt']
+        self.yc_folder_id = settings['folder-id']
         self.token = token
         self.fishing_enough_confidence = settings.get('fishing-enough-confidence', 0.8)
 
@@ -33,8 +33,8 @@ class Model:
         iam_token = self.token.get()
         sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
-        model = sdk.models.text_classifiers("yandexgpt").configure(
-            task_description="Определи категорию сообщения, отправленного в чат бегового клуба",
+        model = sdk.models.text_classifiers('yandexgpt').configure(
+            task_description='Определи категорию сообщения, отправленного в чат бегового клуба',
             labels=labels,
             samples=fishing_samples,
         )
@@ -47,8 +47,9 @@ class Model:
             print(e)
 
         for prediction in result:
+            print(prediction)
             if (prediction.confidence >= self.fishing_enough_confidence and
-                prediction.label == labels[0]
+                prediction.label in (labels[0])
             ):
                 return True
 
@@ -58,7 +59,7 @@ class Model:
         iam_token = self.token.get()
         sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
-        model = sdk.models.completions("yandexgpt").configure(temperature=1.0)
+        model = sdk.models.completions('yandexgpt').configure(temperature=1.0)
 
         result = model.run(message)
 
