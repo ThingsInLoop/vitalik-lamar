@@ -45,7 +45,9 @@ async def main():
     logging.info('Start polling!')
 
     if args.mode == 'polling':
-        await components.find(telegram.BotComponent).get().polling()
+        components.find(telegram.BotComponent).add_command_for_private_chats('start')
+        components.find(telegram.BotComponent).add_command_for_private_chats('help')
+        await components.find(telegram.BotComponent).start()
     if args.mode == 'draw':
         components.draw()
 
