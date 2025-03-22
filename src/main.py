@@ -23,6 +23,10 @@ parser.add_argument('--mode', nargs='?', default='polling')
 
 
 async def main():
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+                        level=logging.DEBUG,
+                        datefmt='%Y-%m-%d %H:%M:%S')
+
     args = parser.parse_args()
 
     initial_config = InitialConfig(args.config_path)
@@ -41,12 +45,9 @@ async def main():
         .append(storage.UsersComponent)
         .start())
 
-    logging.basicConfig(level=logging.INFO)
     logging.info('Start polling!')
 
     if args.mode == 'polling':
-        components.find(telegram.BotComponent).add_command_for_private_chats('start')
-        components.find(telegram.BotComponent).add_command_for_private_chats('help')
         await components.find(telegram.BotComponent).start()
     if args.mode == 'draw':
         components.draw()

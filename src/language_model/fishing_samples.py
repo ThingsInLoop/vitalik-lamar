@@ -73,4 +73,15 @@ fishing_samples = [
                 'знания в этой области — пожалуйста, пишите, я поделюсь.',
         'label': 'фишинг',
     },
+    {
+        'text': 'Гибкий график, онлайн-формат, всё прозрачно. Если заинтересовало – напиши!',
+        'label': 'фишинг',  
+    },
+    {
+        'text': 'WhatsApp/Telegram/Binance/Kucoin/,,,30+apps checker\n' \
+                'Age & Gender filter\n' \
+                'iOS /RCS check\n' \
+                'TG：@Jack0513111',
+        'label': 'фишинг',
+    },
 ]

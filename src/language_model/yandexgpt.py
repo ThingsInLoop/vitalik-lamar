@@ -1,5 +1,7 @@
 import asyncio
+import logging
 import concurrent.futures
+
 from yandex_cloud_ml_sdk import YCloudML
 
 import iam_token
@@ -44,10 +46,12 @@ class Model:
             with concurrent.futures.ThreadPoolExecutor() as pool:
                 result = await loop.run_in_executor(pool, model.run, message)
         except Exception as e:
-            print(e)
+            logging.error(f'Exception: {e}')
+            return False
 
         for prediction in result:
-            print(prediction)
+            logging.info(f'{prediction}')
+
             if (prediction.confidence >= self.fishing_enough_confidence and
                 prediction.label in (labels[0])
             ):
