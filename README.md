@@ -1,6 +1,7 @@
 # vitalik-lamar
 
 **python dependencies**:
+ - aiohttp
  - pyyaml
  - pyTelegramBotAPI
  - yandex-cloud-ml-sdk

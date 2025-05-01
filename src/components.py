@@ -1,4 +1,5 @@
 import inspect
+import logging
 
 from utils import LazyValue
 
@@ -32,7 +33,13 @@ class Components:
         assert component.name in self.config, f'Component {component.name} isn\'t ' \
                                               f'declared in config'
 
-        self.components[component.name] = LazyValue(component.create,
+        def logged_create(create, components, config):
+            component = create(components, config)
+            logging.debug(f'Start {component.name} component')
+            return component
+
+        self.components[component.name] = LazyValue(logged_create,
+                                                      component.create,
                                                       self,
                                                       self.config[component.name])
         return self
