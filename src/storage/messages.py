@@ -49,5 +49,6 @@ class Messages:
 if __name__ == "__main__":
     db = Messages({"storage": {"db-path": sys.argv[1]}})
 
-    print(db.read_messages())
+    for message in db.read_messages():
+        print(message)
 

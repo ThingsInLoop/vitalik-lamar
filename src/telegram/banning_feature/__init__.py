@@ -1,5 +1,6 @@
 import ast
 import aiohttp
+import logging
 from enum import Enum
 
 from telebot.formatting import escape_markdown
@@ -155,6 +156,7 @@ class BanningFeature:
             notification,
             parse_mode='MarkdownV2',
             reply_markup=markup)
+        logging.info(f'Banned {username}')
 
 
     async def _ask_for_ban_with_callback(self, for_message):
