@@ -141,7 +141,7 @@ class BanningFeature:
             return
 
         await self.bot.delete_message(for_message.chat.id, for_message.message_id)
-        markup = utils.pardon_markup('Ты что ты что, а ну разбань', for_message)
+        # markup = utils.pardon_markup('Ты что ты что, а ну разбань', for_message)
         username = (('@' + for_message.from_user.username) 
                          if for_message.from_user.username is not None 
                          else for_message.from_user.first_name)
@@ -151,11 +151,11 @@ class BanningFeature:
         notification += f'\n\n{prefix}: ||{escaped_message}||'
         
       
-        await self.bot.send_message(
-            for_message.chat.id,
-            notification,
-            parse_mode='MarkdownV2',
-            reply_markup=markup)
+        # await self.bot.send_message(
+        #     for_message.chat.id,
+        #     notification,
+        #     parse_mode='MarkdownV2',
+        #     reply_markup=markup)
         logging.info(f'Banned {username}')
 
 
