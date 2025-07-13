@@ -285,4 +285,8 @@ fishing_samples = [
                   'ленту в надежде @Sofiaa_Lux',
           'label': 'фишинг',  
     },
+    {
+        'text': 'https://t.me/unfunnyleg/1989',
+        'label': 'прочее',
+    },
 ]

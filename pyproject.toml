@@ -1,3 +1,19 @@
+[project]
+name = "vitalik-lamar"
+version = "0.0.0"
+description = "Telegram bot for VITALIK RC"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp>=3.12.14",
+    "moviepy>=2.2.1",
+    "pytelegrambotapi>=4.27.0",
+    "pytest-asyncio>=1.0.0",
+    "pyyaml>=6.0.2",
+    "yandex-cloud-ml-sdk>=0.12.0",
+    "yandex-speechkit>=1.5.0",
+]
+
 [tool.pytest.ini_options]
 pythonpath = [
   "src"
