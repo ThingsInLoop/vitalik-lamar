@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-c', '--config-path')
 parser.add_argument('--mode', nargs='?', default='polling')
-parser.add_argument('--log-level', nargs='?', default='debug')
+parser.add_argument('--log-level', nargs='?', default='info')
 
 def parse_log_level(log_level: str):
     match log_level:
