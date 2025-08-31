@@ -109,5 +109,6 @@ class Users:
 if __name__ == "__main__":
     db = Users({"storage": {"db-path": sys.argv[1]}})
 
-    print(db.read_users())
+    for user in db.read_users():
+        print(user)
 
