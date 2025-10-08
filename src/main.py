@@ -59,9 +59,8 @@ async def main():
         .append(storage.UsersComponent)
         .start())
 
-    logging.info('Start polling!')
-
     if args.mode == 'polling':
+        logging.info('Start polling!')
         await components.find(telegram.BotComponent).start()
     if args.mode == 'draw':
         components.draw()

@@ -1,7 +1,8 @@
+import aiohttp
 import asyncio
 import json
-import concurrent.futures
 import requests
+import logging
 
 
 class Component:
@@ -24,23 +25,28 @@ class Token:
         self.url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
         self.request = {"yandexPassportOauthToken": settings['oauth']}
         try:
-            self.iam_token = self.update()
-        finally:
-            pass
+            self.iam_token = requests.post(self.url, data=json.dumps(self.request)).json()['iamToken']
+        except Exception as e:
+            logging.error(f'Exception on attempt to get IAM_TOKEN: {e}')
+            raise e
 
     def get(self):
         return self.iam_token
 
-    def update(self):
-        return requests.post(self.url, data=json.dumps(self.request)).json()['iamToken']
+    async def async_token(self):
+        logging.info('Update IAM_TOKEN')
+        async with aiohttp.ClientSession() as session:
+            async with session.post(self.url, data=json.dumps(self.request)) as response:
+                return (await response.json())['iamToken']
 
     async def polling(self):
         while True:
             try:
-                loop = asyncio.get_running_loop()
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    self.iam_token = await loop.run_in_executor(pool, self.update)
+                self.iam_token = await self.async_token()
+                logging.info('Got new IAM_TOKEN')
                 await asyncio.sleep(3600)
+            except Exception as e:
+                logging.error(f'Exception on attempt to update IAM_TOKEN: {e}')
             finally:
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
 

@@ -1,3 +1,5 @@
+import logging
+
 from telebot.async_telebot import AsyncTeleBot
 from telebot.types import BotCommand, BotCommandScopeAllPrivateChats
 
@@ -16,10 +18,14 @@ class Component:
         self.private_commands.append(BotCommand(command, description))
 
     async def start(self):
-        if len(self.private_commands) > 0:
-            await self.bot.set_my_commands(self.private_commands,
-                                            BotCommandScopeAllPrivateChats())
-        await self.bot.polling()
+        try:
+            if len(self.private_commands) > 0:
+                await self.bot.set_my_commands(self.private_commands,
+                                                BotCommandScopeAllPrivateChats())
+            await self.bot.polling(non_stop=True)
+        except Exception as e:
+            logging.error(f'Exception on telegram bot startup: {e}')
+            raise e
 
     def get(self):
         return self.bot
