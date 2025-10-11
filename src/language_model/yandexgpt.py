@@ -1,8 +1,6 @@
-import asyncio
 import logging
-import concurrent.futures
 
-from yandex_cloud_ml_sdk import YCloudML
+from yandex_cloud_ml_sdk import AsyncYCloudML
 
 import iam_token
 from language_model.fishing_samples import fishing_samples
@@ -33,20 +31,18 @@ class Model:
 
     async def is_fishing(self, message: str):
         iam_token = self.token.get()
-        sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
+        sdk = AsyncYCloudML(folder_id=self.yc_folder_id, auth=iam_token, verify=False)
 
-        model = sdk.models.text_classifiers('yandexgpt').configure(
+        model = sdk.models.text_classifiers('yandexgpt-lite').configure(
             task_description='Определи категорию сообщения, отправленного в чат бегового клуба',
             labels=labels,
             samples=fishing_samples,
         )
 
         try:
-            loop = asyncio.get_running_loop()
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                result = await loop.run_in_executor(pool, model.run, message)
+            result = await model.run(message)
         except Exception as e:
-            logging.error(f'Exception: {e}')
+            logging.error(f'Exception while trying to get prediction: {e}')
             return False
 
         for prediction in result:
@@ -61,10 +57,10 @@ class Model:
 
     async def prompt(self, message: str):
         iam_token = self.token.get()
-        sdk = YCloudML(folder_id=self.yc_folder_id, auth=iam_token)
+        sdk = AsyncYCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
         model = sdk.models.completions('yandexgpt').configure(temperature=1.0)
 
-        result = model.run(message)
+        result = await model.run(message)
 
         return result.alternatives[0].text
