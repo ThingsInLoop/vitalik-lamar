@@ -18,9 +18,9 @@ parser = argparse.ArgumentParser(
     epilog='Be humble',
 )
 
-parser.add_argument('-c', '--config-path')
-parser.add_argument('--mode', nargs='?', default='polling')
-parser.add_argument('--log-level', nargs='?', default='info')
+parser.add_argument('-c', '--config-path', required=True)
+parser.add_argument('--mode', nargs='?', default='polling', help='polling|draw')
+parser.add_argument('--log-level', nargs='?', default='info', help='debug|info|warn|error')
 
 def parse_log_level(log_level: str):
     match log_level:
