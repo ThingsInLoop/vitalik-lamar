@@ -8,6 +8,7 @@ from telebot.formatting import escape_markdown
 import storage
 import language_model
 import speech
+import vision
 import telegram
 import telegram.banning_feature.utils as utils
 from telegram.banning_feature.users import Users
@@ -22,19 +23,21 @@ class Component:
         storage_component = components.find(storage.StorageComponent)
         llm = components.find(language_model.LanguageModelComponent).get()
         speechkit = components.find(speech.SpeechComponent).get()
+        image_vision = components.find(vision.VisionComponent).get()
         bot = components.find(telegram.BotComponent).get()
 
         self.banning_feature = BanningFeature(storage_component.get_users(),
                                               storage_component.get_messages(),
                                               bot,
                                               llm,
-                                              speechkit)
+                                              speechkit,
+                                              image_vision)
 
         @bot.callback_query_handler(func=self.banning_feature.check_callback)
         async def banning_feature_callback(callback):
             await self.banning_feature.process_callback(callback)
 
-        @bot.message_handler(func=self.banning_feature.check_message, content_types=['text', 'voice'])
+        @bot.message_handler(func=self.banning_feature.check_message, content_types=['text', 'voice', 'photo'])
         async def banning_feature_message(message):
             await self.banning_feature.process_message(message)
 
@@ -44,17 +47,19 @@ class Component:
 class BanReason(Enum):
     fishing = 'спам'
     voice_fishing = 'голосовой спам'
+    image_fishing = 'спам в картинках'
     too_many_custom_emojis = 'эмодзи спам'
     already_banned = 'когда-то уже банил'
         
 
 class BanningFeature:
-    def __init__(self, users_storage, messages_storage, bot, lang_model, speechkit):
+    def __init__(self, users_storage, messages_storage, bot, lang_model, speechkit, image_vision):
         self.users = Users(users_storage, messages_storage)
         self.messages_storage = messages_storage
         self.bot = bot
         self.lang_model = lang_model
         self.speechkit = speechkit
+        self.image_vision = image_vision
 
 
     def check_message(self, message):
@@ -113,6 +118,21 @@ class BanningFeature:
     async def _get_ban_reason(self, message):
         if self.users.is_banned(message.from_user):
             return BanReason.already_banned
+
+        if len(message.photo) > 0:
+            for media in message.photo:
+                image = await self._download(media)
+                try:
+                    text = await self.image_vision.extract_text(image, 'image/jpeg')
+                except Exception as e:
+                    logging.error(f'Couldn\'t convert image to text: {e}')
+                    continue
+
+                try:
+                    if await self.lang_model.is_fishing(text):
+                        return BanReason.image_fishing
+                except Exception as e:
+                    logging.error(f'Couldn\'t determine if image is fishing: {e}')
 
         if message.voice is not None:
             if message.voice.file_size > 1024 * 1024:
@@ -200,4 +220,10 @@ class BanningFeature:
     async def _lamar_is_admin(self, chat_id: int):
         admins = await self.bot.get_chat_administrators(chat_id)
         return any(member.user.id == self.bot.user.id for member in admins)
+
+    async def _download(self, media):
+        url = await self.bot.get_file_url(media.file_id)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                return await response.read()
 

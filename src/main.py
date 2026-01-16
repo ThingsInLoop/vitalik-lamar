@@ -5,6 +5,7 @@ import logging
 from config import InitialConfig
 from components import Components
 
+import vision
 import speech
 import storage
 import language_model
@@ -46,12 +47,13 @@ async def main():
     components = Components(initial_config.get_config())
 
     (components
+        .append(vision.VisionComponent)
         .append(telegram.VoiceToTextFeatureComponent)
         .append(speech.SpeechComponent)
         .append(telegram.PingFeatureComponent)
         .append(telegram.BanningFeatureComponent)
         .append(telegram.BotComponent)
-        .append(telegram.settings_feature.Component)
+        # .append(telegram.settings_feature.Component)
         .append(language_model.LanguageModelComponent)
         .append(iam_token.Component)
         .append(storage.StorageComponent)
