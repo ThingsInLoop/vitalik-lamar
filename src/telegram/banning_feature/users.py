@@ -49,6 +49,9 @@ class Users:
         self.verified_users.add(user.id)
         
     def ban(self, for_message):
+        if self.is_banned(for_message.from_user):
+            return
+        
         self._users_storage.add_user(
             for_message.from_user.id,
             for_message.from_user.first_name,

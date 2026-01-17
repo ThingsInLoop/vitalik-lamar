@@ -70,17 +70,17 @@ class BanningFeature:
             ban_reason = await self._get_ban_reason(message)
         except Exception:
             return
+
+        if message.chat.type == 'private':
+            await self.bot.reply_to(message, f'{ban_reason.value}')
+            return
         
         if ban_reason is None:
             self.users.verify(message.from_user)
             return
-        
-        if message.chat.type == 'private':
-            await self.bot.reply_to(message, f'{ban_reason.value}')
-            return
 
-        if not self.users.is_banned(message.from_user):
-            self.users.ban(message)
+        logging.info(f'Ban user {message.from_user.id} for {ban_reason.value}')
+        self.users.ban(message)
 
         if not await self._lamar_is_admin(message.chat.id):
             await self._ask_for_ban_with_callback(message)
@@ -119,20 +119,20 @@ class BanningFeature:
         if self.users.is_banned(message.from_user):
             return BanReason.already_banned
 
-        if len(message.photo) > 0:
-            for media in message.photo:
-                image = await self._download(media)
-                try:
-                    text = await self.image_vision.extract_text(image, 'image/jpeg')
-                except Exception as e:
-                    logging.error(f'Couldn\'t convert image to text: {e}')
-                    continue
+        if message.photo is not None:
+            logging.info(f'Extracting text from user\'s {message.from_user.id} photo')
+            image = await self._download(message.photo[-1])
+            try:
+                text = await self.image_vision.extract_text(image, 'image/jpeg')
+            except Exception as e:
+                logging.error(f'Couldn\'t convert image to text: {e}')
+                return None
 
-                try:
-                    if await self.lang_model.is_fishing(text):
-                        return BanReason.image_fishing
-                except Exception as e:
-                    logging.error(f'Couldn\'t determine if image is fishing: {e}')
+            try:
+                if await self.lang_model.is_fishing(text):
+                    return BanReason.image_fishing
+            except Exception as e:
+                logging.error(f'Couldn\'t determine if image is fishing: {e}')
 
         if message.voice is not None:
             if message.voice.file_size > 1024 * 1024:

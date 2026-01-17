@@ -30,8 +30,11 @@ class Model:
         self.fishing_enough_confidence = settings.get('fishing-enough-confidence', 0.8)
 
     async def is_fishing(self, message: str):
+        if len(message) < 10:
+            return False
+        
         iam_token = self.token.get()
-        sdk = AsyncYCloudML(folder_id=self.yc_folder_id, auth=iam_token, verify=False)
+        sdk = AsyncYCloudML(folder_id=self.yc_folder_id, auth=iam_token)
 
         model = sdk.models.text_classifiers('yandexgpt-lite').configure(
             task_description='Определи категорию сообщения, отправленного в чат бегового клуба',
