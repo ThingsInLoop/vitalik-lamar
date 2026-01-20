@@ -119,11 +119,20 @@ class BanningFeature:
             await self._pardon(callback_data['user_id'], username, callback.message.chat)
 
 
+    # Костыль для понедельничных мемов
+    def _memes_reply(self, message):
+        return message.reply_to_message is not None and
+                message.reply_to_message.text is not None and
+                ('мем' in message.reply_to_message.text.lower() or
+                'мэм' in message.reply_to_message.text.lower())
+    
+
     async def _get_ban_reason(self, message):
         if self.users.is_banned(message.from_user):
             return BanReason.already_banned
 
-        if message.photo is not None:
+        if message.photo is not None and not self._memes_reply(message):
+            
             logging.info(f'Extracting text from user\'s {message.from_user.id} photo')
             image = await self._download(message.photo[-1])
             try:
