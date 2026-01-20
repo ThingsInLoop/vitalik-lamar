@@ -66,6 +66,10 @@ class BanningFeature:
         return not self.users.is_verified(message.from_user)
 
     async def process_message(self, message):
+        if self._memes_reply(message):
+            logging.info(f'Ignoring memes reply from user {message.from_user.id}')
+            return
+        
         try:
             ban_reason = await self._get_ban_reason(message)
         except Exception:
@@ -131,8 +135,7 @@ class BanningFeature:
         if self.users.is_banned(message.from_user):
             return BanReason.already_banned
 
-        if message.photo is not None and not self._memes_reply(message):
-            
+        if message.photo:
             logging.info(f'Extracting text from user\'s {message.from_user.id} photo')
             image = await self._download(message.photo[-1])
             try:
