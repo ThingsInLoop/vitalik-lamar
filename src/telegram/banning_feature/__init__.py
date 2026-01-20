@@ -71,6 +71,10 @@ class BanningFeature:
         except Exception:
             return
 
+        if self.users.is_banned(message.from_user) or self.users.is_verifier(message.from_user):
+            logging.info(f'User {message.from_user.id} is already processed')
+            return
+
         if message.chat.type == 'private':
             await self.bot.reply_to(message, f'{ban_reason.value}')
             return

@@ -22,12 +22,12 @@ class Users:
   """
 
     insert_new_user = """
-    INSERT INTO users VALUES 
+    INSERT OR IGNORE INTO users VALUES 
       ('{}', '{}', '{}', '{}', NULL)
   """
 
     insert_new_user_wout_username = """
-    INSERT INTO users VALUES 
+    INSERT OR IGNORE INTO users VALUES 
       ('{}', '{}', NULL, '{}', NULL)
   """
 
