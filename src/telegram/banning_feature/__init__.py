@@ -71,7 +71,7 @@ class BanningFeature:
         except Exception:
             return
 
-        if self.users.is_banned(message.from_user) or self.users.is_verifier(message.from_user):
+        if self.users.is_banned(message.from_user) or self.users.is_verified(message.from_user):
             logging.info(f'User {message.from_user.id} is already processed')
             return
 
