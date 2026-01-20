@@ -142,12 +142,8 @@ class BanningFeature:
             if message.voice.file_size > 1024 * 1024:
                 return None
 
-            voice_url = await self.bot.get_file_url(message.voice.file_id)
-            async with aiohttp.ClientSession() as session:
-                async with session.get(voice_url) as response:
-                    voice_file = await response.read()
-
-            message.text = await self.speechkit.recognize(voice_file)
+            logging.info('Transcripting voice')
+            message.text = await self.speechkit.recognize(await self._download(message.voice))
 
         if utils.too_many_custom_emojis(message):
             return BanReason.too_many_custom_emojis
