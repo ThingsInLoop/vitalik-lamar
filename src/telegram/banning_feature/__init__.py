@@ -121,10 +121,10 @@ class BanningFeature:
 
     # Костыль для понедельничных мемов
     def _memes_reply(self, message):
-        return message.reply_to_message is not None and
+        return (message.reply_to_message is not None and
                 message.reply_to_message.text is not None and
                 ('мем' in message.reply_to_message.text.lower() or
-                'мэм' in message.reply_to_message.text.lower())
+                'мэм' in message.reply_to_message.text.lower()))
     
 
     async def _get_ban_reason(self, message):
