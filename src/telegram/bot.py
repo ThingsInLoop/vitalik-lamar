@@ -22,7 +22,7 @@ class Component:
             if len(self.private_commands) > 0:
                 await self.bot.set_my_commands(self.private_commands,
                                                 BotCommandScopeAllPrivateChats())
-            await self.bot.polling(non_stop=True)
+            await self.bot.polling(non_stop=True, interval=0.5)
         except Exception as e:
             logging.error(f'Exception on telegram bot startup: {e}')
             raise e
