@@ -28,7 +28,7 @@ class SlidingWindowRateLimiter:
         self._update_timestamps()
 
         if self.capacity <= 0:
-            return None
+            return self.window
         if len(self.timestamps) < self.capacity:
             return datetime.timedelta(seconds=0)
         return self.window - (datetime.datetime.now() - self.timestamps[0])

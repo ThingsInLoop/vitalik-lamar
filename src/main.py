@@ -53,6 +53,7 @@ async def main():
         .append(telegram.PingFeatureComponent)
         .append(telegram.BanningFeatureComponent)
         .append(telegram.BotComponent)
+        .append(telegram.JoinLimiterComponent)
         # .append(telegram.settings_feature.Component)
         .append(language_model.LanguageModelComponent)
         .append(iam_token.Component)
