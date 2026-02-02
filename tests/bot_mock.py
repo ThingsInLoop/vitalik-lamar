@@ -21,13 +21,14 @@ class BotMock:
         self.message_filters = []
         self.chat_member_filters = []
         self.replies = []
+        self.sent_messages = {}
         self.unbans = []
         self.chats_admins = {}
         self.chats_admins_requests = 0
 
         self.user = User(id=1234, is_bot=True, first_name='VITALIK', last_name='LAMAR')
 
-    def message_handler(self, func=lambda: True):
+    def message_handler(self, func=lambda: True, content_types=None):
         def wrapper(action):
             self.message_filters.append((func, action))
             @functools.wraps(action)
@@ -55,6 +56,9 @@ class BotMock:
 
     async def reply_to(self, message, text):
         self.replies.append(text)
+
+    async def send_message(self, chat_id, text):
+        self.sent_messages.setdefault(chat_id, list()).append(text)
 
     async def unban_chat_member(self, chat_id, user_id, only_if_banned):
         self.unbans.append((chat_id, user_id, only_if_banned))

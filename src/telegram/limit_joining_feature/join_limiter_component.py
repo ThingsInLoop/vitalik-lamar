@@ -38,6 +38,9 @@ class JoinLimiterComponent:
 
         return self
 
+    def stop(self):
+        for _, task in self.rate_limit_notifications.items():
+            task.cancel()
 
     async def process_notification(self, message):
         logging.debug('Processing join notification')
@@ -95,6 +98,7 @@ class JoinLimiterComponent:
         await self.bot.unban_chat_member(chat_id=update.chat.id,
                                          user_id=update.from_user.id,
                                          only_if_banned=False)
+
         self.rate_limited_users.setdefault(update.chat.id, set()).add(update.from_user.id)
         if update.chat.id in self.join_messages and update.from_user.id in self.join_messages[update.chat.id]:
             try:
