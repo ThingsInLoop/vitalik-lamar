@@ -51,6 +51,7 @@ async def main():
         .append(telegram.VoiceToTextFeatureComponent)
         .append(speech.SpeechComponent)
         .append(telegram.PingFeatureComponent)
+        .append(telegram.TestingFeatureComponent)
         .append(telegram.BanningFeatureComponent)
         .append(telegram.BotComponent)
         .append(telegram.JoinLimiterComponent)

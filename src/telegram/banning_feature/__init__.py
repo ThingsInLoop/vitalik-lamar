@@ -46,6 +46,7 @@ class Component:
 
 class BanReason(Enum):
     fishing = 'спам'
+    quote_fishing = 'спам в цитате'
     voice_fishing = 'голосовой спам'
     image_fishing = 'спам в картинках'
     too_many_custom_emojis = 'эмодзи спам'
@@ -75,20 +76,19 @@ class BanningFeature:
         except Exception:
             return
 
-        if self.users.is_banned(message.from_user) or self.users.is_verified(message.from_user):
-            logging.info(f'User {message.from_user.id} is already processed')
-            return
-
         if message.chat.type == 'private':
             await self.bot.reply_to(message, f'{ban_reason.value}')
             return
-        
+
         if ban_reason is None:
             self.users.verify(message.from_user)
             return
 
-        logging.info(f'Ban user {message.from_user.id} for {ban_reason.value}')
-        self.users.ban(message)
+        if ban_reason == BanReason.already_banned:
+            logging.info(f'User {message.from_user.id} is already banned')
+        else:
+            logging.info(f'Ban user {message.from_user.id} for {ban_reason.value}')
+            self.users.ban(message)
 
         if not await self._lamar_is_admin(message.chat.id):
             await self._ask_for_ban_with_callback(message)
@@ -159,6 +159,8 @@ class BanningFeature:
 
         if utils.too_many_custom_emojis(message):
             return BanReason.too_many_custom_emojis
+        if message.quote is not None and await self.lang_model.is_fishing(message.quote.text):
+            return BanReason.quote_fishing
         if await self.lang_model.is_fishing(message.text):
             return BanReason.fishing if message.voice is None else BanReason.voice_fishing
         return None
