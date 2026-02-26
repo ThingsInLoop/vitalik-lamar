@@ -35,10 +35,17 @@ class Component:
 
         @bot.callback_query_handler(func=self.banning_feature.check_callback)
         async def banning_feature_callback(callback):
+            logging.info('Got callback')
             await self.banning_feature.process_callback(callback)
 
         @bot.message_handler(func=self.banning_feature.check_message, content_types=['text', 'voice', 'photo'])
         async def banning_feature_message(message):
+            logging.info(f'Got message from {message.from_user.id}')
+            await self.banning_feature.process_message(message)
+
+        @bot.edited_message_handler(func=self.banning_feature.check_message, content_types=['text', 'voice', 'photo'])
+        async def banning_feature_edited_message(message):
+            logging.info(f'Got edited message from {message.from_user.id}')
             await self.banning_feature.process_message(message)
 
         return self
