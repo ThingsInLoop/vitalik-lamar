@@ -1,6 +1,6 @@
 import logging
 
-from yandex_cloud_ml_sdk import AsyncYCloudML
+from yandex_ai_studio_sdk import AsyncAIStudio
 
 import iam_token
 from language_model.fishing_samples import fishing_samples
@@ -34,7 +34,7 @@ class Model:
             return False
         
         iam_token = self.token.get()
-        sdk = AsyncYCloudML(folder_id=self.yc_folder_id, auth=iam_token)
+        sdk = AsyncAIStudio(folder_id=self.yc_folder_id, auth=iam_token)
 
         model = sdk.models.text_classifiers('yandexgpt-lite').configure(
             task_description='Определи категорию сообщения, отправленного в чат бегового клуба',

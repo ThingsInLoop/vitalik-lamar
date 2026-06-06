@@ -2,8 +2,7 @@ import tempfile
 import asyncio
 import concurrent.futures
 
-from speechkit import model_repository, configure_credentials, creds
-from speechkit.stt import AudioProcessingType
+from yandex_ai_studio_sdk import AsyncAIStudio
 
 import iam_token
 
@@ -25,27 +24,17 @@ class Component:
 class YandexSpeech:
     def __init__(self, token, settings):
         self.token = token
-        self.folder_id = settings['folder-id']
+        self.yc_folder_id = settings['folder-id']
         
     async def recognize(self, audio):
         iam_token = self.token.get()
-        configure_credentials(
-           yandex_credentials=creds.YandexCredentials(
-              iam_token=iam_token,
-              folder_id=self.folder_id,
-           )
+
+        sdk = AsyncAIStudio(folder_id=self.yc_folder_id, auth=iam_token)
+        stt = sdk.speechkit.speech_to_text(
+            audio_format=sdk.speechkit.AudioFormat.MP3,
+            language_codes='ru_RU',
+            text_normalization=True
         )
-        
-        model = model_repository.recognition_model()
+        result = await stt.run(audio)
 
-        model.model = 'general'
-        model.language = 'ru-RU'
-        model.audio_processing_type = AudioProcessingType.Full
-
-        with tempfile.NamedTemporaryFile() as file:
-            file.write(audio)
-            loop = asyncio.get_running_loop()
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                result = await loop.run_in_executor(pool, model.transcribe_file, file.name)
-
-        return str(result[0])
+        return result.text if result.text is not None else ""
