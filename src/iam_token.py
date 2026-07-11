@@ -1,8 +1,13 @@
-import aiohttp
 import asyncio
 import json
-import requests
 import logging
+import time
+import jwt
+
+import yandexcloud
+
+from yandex.cloud.iam.v1.iam_token_service_pb2 import (CreateIamTokenRequest)
+from yandex.cloud.iam.v1.iam_token_service_pb2_grpc import IamTokenServiceStub
 
 
 class Component:
@@ -19,13 +24,49 @@ class Component:
         return self.token
 
 
+def create_iam_token(key_path: str):
+    with open(key_path, 'r') as f:
+        obj = f.read() 
+        obj = json.loads(obj)
+        private_key = obj['private_key']
+        key_id = obj['id']
+        service_account_id = obj['service_account_id']
+
+    sa_key = {
+        "id": key_id,
+        "service_account_id": service_account_id,
+        "private_key": private_key
+    }
+    now = int(time.time())
+    payload = {
+            'aud': 'https://iam.api.cloud.yandex.net/iam/v1/tokens',
+            'iss': service_account_id,
+            'iat': now,
+            'exp': now + 3600
+        }
+
+    encoded_token = jwt.encode(
+        payload,
+        private_key,
+        algorithm='PS256',
+        headers={'kid': key_id}
+    )
+
+    sdk = yandexcloud.SDK(service_account_key=sa_key)
+    iam_service = sdk.client(IamTokenServiceStub)
+    iam_token = iam_service.Create(
+      CreateIamTokenRequest(jwt=encoded_token)
+    )
+
+    return iam_token.iam_token
+
+
 class Token:
     def __init__(self, settings):
         self.iam_token = None
-        self.url = "https://iam.api.cloud.yandex.net/iam/v1/tokens"
-        self.request = {"yandexPassportOauthToken": settings['oauth']}
+        self.key_path = settings['key-path']
         try:
-            self.iam_token = requests.post(self.url, data=json.dumps(self.request)).json()['iamToken']
+            self.iam_token = create_iam_token(self.key_path)
         except Exception as e:
             logging.error(f'Exception on attempt to get IAM_TOKEN: {e}')
             raise e
@@ -35,16 +76,14 @@ class Token:
 
     async def async_token(self):
         logging.info('Update IAM_TOKEN')
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self.url, data=json.dumps(self.request)) as response:
-                return (await response.json())['iamToken']
+        await asyncio.to_thread(create_iam_token, self.key_path)
 
     async def polling(self):
         while True:
             try:
+                await asyncio.sleep(3000)
                 self.iam_token = await self.async_token()
                 logging.info('Got new IAM_TOKEN')
-                await asyncio.sleep(3600)
             except Exception as e:
                 logging.error(f'Exception on attempt to update IAM_TOKEN: {e}')
             finally:
