@@ -76,14 +76,18 @@ class Token:
 
     async def async_token(self):
         logging.info('Update IAM_TOKEN')
-        await asyncio.to_thread(create_iam_token, self.key_path)
+        return await asyncio.to_thread(create_iam_token, self.key_path)
 
     async def polling(self):
+        await asyncio.sleep(1800)
         while True:
             try:
-                await asyncio.sleep(3000)
-                self.iam_token = await self.async_token()
-                logging.info('Got new IAM_TOKEN')
+                new_token = await self.async_token()
+                if new_token is None:
+                    raise ValueError('New async token is None')
+                self.iam_token = new_token
+                logging.info(f'Got new IAM_TOKEN: {self.iam_token}')
+                await asyncio.sleep(1800)
             except Exception as e:
                 logging.error(f'Exception on attempt to update IAM_TOKEN: {e}')
             finally:
